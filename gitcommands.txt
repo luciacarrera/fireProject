@@ -1,16 +1,18 @@
- Get started by creating a new file or uploading an existing file. We recommend every repository include a README, LICENSE, and .gitignore.
-…or create a new repository on the command line
+######################### BASIC COMMANDS #########################
+git add urfile.rmd		# adds urfile.rmd to repo
+git add -A 			# adds all all files not in repo
+git commit -m "any message"	# "saves" file version
+git push origin main		# pushes versions of files to the cloud
+git pull origin main		# gets versions of files from the cloud
 
-echo "# Lab-3-Lucia-Carrera" >> README.md
+######################### SETTING UP COMMANDS #########################
+# ssh
 git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
+# must have ssh keys created and linked
 git remote add origin git@github.com:luciacarrera/fireProject.git
-git push -u origin main
+git pull origin main
 
-…or push an existing repository from the command line
-
+# https
+git init
 git remote add origin https://github.com/luciacarrera/fireProject.git
-git branch -M main
-git push -u origin main
+git pull origin main

@@ -116,7 +116,7 @@ ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
   scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none')
 
 ```
-Around August the calls seem to double in frequency 
+Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
 
 ```{r Month by shifts}
 shift_time <- fire %>% filter(!is.na(Shift)) %>% mutate(Call = mdy_hm(Dis_dt),

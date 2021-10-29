@@ -121,16 +121,21 @@ ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
 
 ```
 
+<<<<<<< HEAD
 ### Type of incident description
+=======
+
+>>>>>>> 668d3774050497f6828bf53750682841e4720b96
 
 ```{r Type of incident description}
 incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% select(Inc_des = Inc_des, count = count) %>% arrange(desc(count)) %>% filter(count > 90)
 incident
 ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
-  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60))+
-  scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none') # Idk how else to hide the key
+  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60+  # We have an issue here
+  scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none')
 
 ```
+Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
 
 ### Month by shifts
 
@@ -147,7 +152,11 @@ ggplot(data = shift_time, mapping = aes(x= Mon, fill = Shift))+
 
 ```
 
+<<<<<<< HEAD
 ### Amount of time at each incident
+=======
+This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulence to deliver the patient to a medical facility.
+>>>>>>> 668d3774050497f6828bf53750682841e4720b96
 
 ```{r Amount of time at each incident}
 
@@ -180,9 +189,7 @@ inc_time <- inc_time %>% filter(!is.na(inc_time))
 
 
 ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
-  geom_histogram(binwidth = 1) + labs(title = "Time spent at each incident site (minutes)")
-
-
+  geom_histogram(binwidth = 4) + labs(title = "Time spent at each incident site (minutes)")
 
 ```
 

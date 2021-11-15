@@ -102,12 +102,6 @@ ggplot(data = alarm,
 ```{r Location of Calls, message=FALSE, warning=FALSE}
 #  Do a scatterplot of Latitude by Longitude, to see where calls are made in Burlington. Do you recognize the shape of the data?
 
-
-# Location of Calls
-ggplot(data = fire,
-mapping = aes(x = Long, y = Lat )) +
-  geom_point()
-
 #  Using leaflet, make a map showing circles on the location of each incident.  Start here:
 m <- leaflet() %>%
   addTiles() %>%

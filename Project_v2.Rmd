@@ -5,6 +5,8 @@ date: "10/17/2021"
 output: html_document
 ---
 
+<br>
+
 ## Introduction
 
 The data set we are analyzing today is based on data from the Burlington Fire Department. This data includes info on incident types and response times from Aug 1, 2018, through November 30, 2019. Data was pulled from the fire department RMS database. There is no sample bias as the data is strictly incident responses of the fire department. This data is an observational study to see the time taken from call to response of the fire department and locations of incidents. The only bias that is seen is possibility in rounding times to the nearest minute, but this is understandable and would not affect the results. 
@@ -13,6 +15,7 @@ We believe this data could be very interesting to understand for what reasons th
 
 To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
 
+<br>
 
 ## Data Setup & Cleaning
 
@@ -70,7 +73,10 @@ fire <- fire %>% mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
 names(fire)
 ```
 
+<br>
+
 ## Data Analysis
+
 ### Time of Calls
 
 ```{r Time of Calls, message=FALSE, warning=FALSE}
@@ -88,6 +94,8 @@ ggplot(data = alarm,
   
 
 ```
+
+<br>
 
 ### Location of Calls
 
@@ -110,6 +118,8 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ```
 
+<br>
+
 ### Amount of times a Unit responds to call
 
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
@@ -121,6 +131,8 @@ ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
 
 ```
 
+<br>
+
 ### Type of incident description
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
@@ -131,7 +143,10 @@ ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
   scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none')
 
 ```
+
 Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
+
+<br>
 
 ### Month by shifts
 
@@ -148,8 +163,10 @@ ggplot(data = shift_time, mapping = aes(x= Mon, fill = Shift))+
 
 ```
 
+<br>
 
 ### Amount of time at each incident
+
 This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulence to deliver the patient to a medical facility.
 
 ```{r Amount of time at each incident, message=FALSE, warning=FALSE}
@@ -187,4 +204,8 @@ ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
 
 ```
 
+<br>
+
 ## Conclusions
+
+"the conclusion"

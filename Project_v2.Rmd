@@ -1,6 +1,6 @@
 ---
 title: "Burlington Fire Department Incidents & Response Times, 2018 - 2019"
-author: "Clay Crisholm, Ethan Lauricella & Lucía Carrera"
+author: "Clay Chisholm, Ethan Lauricella & Lucía Carrera"
 date: "10/17/2021"
 output: html_document
 ---
@@ -14,7 +14,7 @@ We believe this data could be very interesting to understand for what reasons th
 To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
 
 
-## Data Background
+## Data Setup & Cleaning
 
 ```{r setup, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -69,35 +69,30 @@ fire <- fire %>% mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
 
 names(fire)
 ```
-##Data Analysis
-###Time of Calls 
 
-The graph below is a histogram to represent what hour of the day most calls come in. According to the graph, the most likely times are between hours 5 and 15 on a 24 hour scale. There is a peak between the 11th and 12th hour and a dip between 20 and 5. Because this is 24 hour scale we can say the dip is between 20 and 5. 
+## Data Analysis
+### Time of Calls
 
-```{r Time of Calls}
+```{r Time of Calls, message=FALSE, warning=FALSE}
 # The first graph we wanted to map out is the time of calls to see at what were the most "popular" times to call 
 alarm <- fire %>% mutate(Call = mdy_hm(Alm_dt), 
                    Weekday = wday(Call, label = TRUE),
                    Mon = month(Call, label = TRUE),
                    Date = date(Call),
-                   Hour = hour(Call) + 1)
+                   Hour = hour(Call))
 
 # 
 ggplot(data = alarm, 
        mapping = aes(x= Hour)) +
-  geom_histogram(binwidth = 1, color = 'grey', fill = 'red')
+  geom_histogram(color = 'purple', fill = 'pink')
   
 
 ```
-##Data Analysis
-###Location of Calls 
 
-The graph below is a leaflet/GeoPoint graph used to represent where the calls are located in Burlington. The calls are located in Burlington, but there are some calls located on the edge of Colchester and South Burlington. There is also an outlier, located all the way out near Montpelier. 
+### Location of Calls
 
-```{r Location of Calls}
+```{r Location of Calls, message=FALSE, warning=FALSE}
 #  Do a scatterplot of Latitude by Longitude, to see where calls are made in Burlington. Do you recognize the shape of the data?
-
-# no
 
 
 # Location of Calls
@@ -114,11 +109,10 @@ m <- leaflet() %>%
 m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ```
-### Amount of time at each incident
 
-This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulence to deliver the patient to a medical facility.
+### Amount of times a Unit responds to call
 
-```{r Amount of times a Unit responds to call }
+```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
 f2 <- fire %>% group_by(Unit) %>% summarize(count = n()) %>% arrange(desc(count)) %>% select(Unit = Unit, count = count)
 f2
 ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
@@ -126,23 +120,22 @@ ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
   scale_x_discrete(limits = f2$Unit)
 
 ```
+
 ### Type of incident description
 
-This shows the amount of what type of incidents the fire department responds to. Most of their responses involve EMS calls. (If you can suggest a fix for the labels that would be great as they are currently too long and cause issues)
-
-```{r Type of incident description}
+```{r Type of incident description, message=FALSE, warning=FALSE}
 incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% select(Inc_des = Inc_des, count = count) %>% arrange(desc(count)) %>% filter(count > 90)
 incident
 ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
-  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60))+
-  scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none') # Idk how else to hide the key
+  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60+  # We have an issue here
+  scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none')
 
 ```
+Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
+
 ### Month by shifts
 
-Shows each month and the amount of responses per month. The color indicates the shift responding. It seems that during August the amount of responses jumps 2x, possibly from the student population returning to the city. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required.
-
-```{r Month by shifts}
+```{r Month by shifts, message=FALSE, warning=FALSE}
 shift_time <- fire %>% filter(!is.na(Shift)) %>% mutate(Call = mdy_hm(Dis_dt),
                    Weekday = wday(Call, label = TRUE),
                    Mon = month(Call, label = FALSE),
@@ -155,43 +148,43 @@ ggplot(data = shift_time, mapping = aes(x= Mon, fill = Shift))+
 
 ```
 
+
+### Amount of time at each incident
 This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulence to deliver the patient to a medical facility.
 
-```{r Amount of time at each incident}
+```{r Amount of time at each incident, message=FALSE, warning=FALSE}
 
 # Time spent at each site, A_ being the arrival time, and D_ being the departure time
+# new data frame inc_time with the na's filtered out
+inc_time <- fire %>%
+  filter(!is.na(Alm_dt)) %>% 
+  filter(!is.na(Inc_des)) %>%
+  # create new columns to be able to differentiate months, date, hour, minute for arrival call and departure call
+  mutate(ACall = mdy_hm(Alm_dt),
+         AWeekday = wday(ACall, label = TRUE),
+         AMon = month(ACall, label = TRUE),
+         ADate = date(ACall),
+         AHour = hour(ACall),
+         AMin = minute(ACall)) %>%
+  mutate(DCall = mdy_hm(Ins_dt),
+         DWeekday = wday(DCall, label = TRUE),
+         DMon = month(DCall, label = TRUE),
+         DDate = date(DCall),
+         DHour = hour(DCall),
+         DMin = minute(DCall))
 
-inc_time <- fire %>% filter(!is.na(Alm_dt)) %>% filter(!is.na(Inc_des)) %>%
-                    mutate(ACall = mdy_hm(Alm_dt), 
-                   AWeekday = wday(ACall, label = TRUE),
-                   AMon = month(ACall, label = TRUE),
-                   ADate = date(ACall),
-                   AHour = hour(ACall),
-                   AMin = minute(ACall)) %>% 
-                    mutate(DCall = mdy_hm(Ins_dt), 
-                   DWeekday = wday(DCall, label = TRUE),
-                   DMon = month(DCall, label = TRUE),
-                   DDate = date(DCall),
-                   DHour = hour(DCall),
-                   DMin = minute(DCall))
-
-inc_time <- inc_time %>% mutate(
-                            time_workd = (DDate - ADate)*24*60,
-                            time_workh = (DHour - AHour)*60,
-                            time_workm = DMin - AMin,
-                            total_m = time_workh + time_workm + time_workd)
+inc_time <- inc_time %>% 
+  mutate(time_workd = (DDate - ADate)*24*60,
+         time_workh = (DHour - AHour)*60,
+         time_workm = DMin - AMin,
+         total_m = time_workh + time_workm + time_workd)
 
 inc_time <- inc_time %>% filter(!is.na(inc_time))
 
 
 ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
-  geom_histogram(binwidth = 1) + labs(title = "Time spent at each incident site (minutes)")
-
+  geom_histogram(binwidth = 4) + labs(title = "Time spent at each incident site (minutes)")
 
 ```
 
-##Conclusion
-
-According to the data, we found that over the course of 12 months, the calls tend to double in August (When School start) and most calls are EMS calls that tend to last 20 minutes. This is because most interactions with incidents are medical transportation related. The most popular Units called upon are E1 and E3 which our hypothesis is that E1 and E3 are emergency group 1 and emergency group 3 (most likely for medical response). 
-
-This data set only pertains to the Burlington police department, so in terms of there being bias in our data set it would be more general to Vermont if more fire deperatments data was included. 
+## Conclusions

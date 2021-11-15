@@ -99,15 +99,15 @@ ggplot(data = alarm,
 
 ### Location of Calls
 
-```{r Location of Calls, message=FALSE, warning=FALSE}
-#  Do a scatterplot of Latitude by Longitude, to see where calls are made in Burlington. Do you recognize the shape of the data?
+Mention that there are a couple of outliers.
 
-#  Using leaflet, make a map showing circles on the location of each incident.  Start here:
+```{r Location of Calls, message=FALSE, warning=FALSE}
+#  using dplyr and leaflet we filtered how much zoom and what part of the world the map would show
 m <- leaflet() %>%
   addTiles() %>%
   setView(lat = 44.475, lng = -73.212, zoom = 12)
 
-#  (Once you get the leaflet plot working, remove the scatterplot of Longitude by Latitude)
+# Using leaflet, we made a map showing circles on the location of each incident.
 m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ```
@@ -117,7 +117,9 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 ### Amount of times a Unit responds to call
 
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
+#
 f2 <- fire %>% group_by(Unit) %>% summarize(count = n()) %>% arrange(desc(count)) %>% select(Unit = Unit, count = count)
+
 f2
 ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
   geom_bar()+ theme(axis.text.x = element_text(hjust=1, angle = 60)) + 

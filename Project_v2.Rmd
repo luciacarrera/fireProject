@@ -16,11 +16,16 @@ We believe this data could be very interesting to understand for what reasons th
 To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
 
 <br>
+```{r}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
 
 ## Data Setup & Cleaning
+Hidden for now
 
 ```{r setup, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 # Loading of packages we will use for our project
 library(tidyverse)
@@ -32,10 +37,10 @@ library(gridExtra)
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
 
 # Result summaries of our data
-tibble(fire)
+#tibble(fire)
 
 # Visualization of the different variables available in our data set
-names(fire)
+#names(fire)
 
 ## The names of our variables were summarized by r studio leading to names such as "Disp_d....m", to be able to clearly use our data we decided to modify these names for ease of use.
 
@@ -70,14 +75,15 @@ fire <- fire %>% mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%
 
 fire <- fire %>% mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
 
-names(fire)
+#names(fire)
 ```
 
 <br>
 
 ## Data Analysis
 
-### Time of Calls
+The graph below is a histogram to represent what hour of the day most calls come in. According to the graph, the most likely times are between hours 5 and 15 on a 24 hour scale. There is a peak between the 11th and 12th hour and a dip between 20 and 5. Because this is 24 hour scale we can say the dip is between 20 and 5.
+
 
 ```{r Time of Calls, message=FALSE, warning=FALSE}
 # The first graph we wanted to map out is the time of calls to see at what were the most "popular" times to call 
@@ -87,10 +93,10 @@ alarm <- fire %>% mutate(Call = mdy_hm(Alm_dt),
                    Date = date(Call),
                    Hour = hour(Call))
 
-# 
 ggplot(data = alarm, 
        mapping = aes(x= Hour)) +
-  geom_histogram(color = 'purple', fill = 'pink')
+  geom_histogram(color = 'purple', fill = 'pink') + labs(title = "Number of calls at each Hour")+
+  guides(fill = 'none')
   
 
 ```
@@ -99,7 +105,7 @@ ggplot(data = alarm,
 
 ### Location of Calls
 
-Mention that there are a couple of outliers.
+The graph below is a leaflet/GeoPoint graph used to represent where the calls are located in Burlington. The calls are located in Burlington, but there are some calls located on the edge of Colchester and South Burlington. There is also an outlier, located all the way out near Montpelier. There is a very small amount of outliers (>.1%) which could be from technical error from the department.
 
 ```{r Location of Calls, message=FALSE, warning=FALSE}
 #  using dplyr and leaflet we filtered how much zoom and what part of the world the map would show
@@ -116,11 +122,13 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ### Amount of times a Unit responds to call
 
+This histogram represents the amount of time each unit is called upon to respond to an emergency. (Explain each unit here)
+
+
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
 #
 f2 <- fire %>% group_by(Unit) %>% summarize(count = n()) %>% arrange(desc(count)) %>% select(Unit = Unit, count = count)
 
-f2
 ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
   geom_bar()+ theme(axis.text.x = element_text(hjust=1, angle = 60)) + 
   scale_x_discrete(limits = f2$Unit)
@@ -131,30 +139,34 @@ ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
 
 ### Type of incident description
 
+This plot shows the amount of times a specific incident is responded to by the fire department. Most of their responses involve EMS calls.
+
 ```{r Type of incident description, message=FALSE, warning=FALSE}
-incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% select(Inc_des = Inc_des, count = count) %>% arrange(desc(count)) %>% filter(count > 90)
-incident
+incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% arrange(desc(count)) %>% filter(count > 90)
+
 ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
-  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60+  # We have an issue here
-  scale_x_discrete(limits = incident$Inc_des)+theme(legend.position = 'none')
+  geom_bar()+theme(axis.text.y = element_text(size = 5))+  # We have an issue here
+  scale_x_discrete(limits = incident$Inc_des)+guides(fill='none') + coord_flip() + xlab("Incident Description")
 
 ```
-
-Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
 
 <br>
 
 ### Month by shifts
 
+Shows each month and the amount of responses per month. The color indicates the shift responding. It seems that during August the amount of responses jumps 2x, possibly from the student population returning to the city. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required.
+
+
+
 ```{r Month by shifts, message=FALSE, warning=FALSE}
-shift_time <- fire %>% filter(!is.na(Shift)) %>% mutate(Call = mdy_hm(Dis_dt),
+shift_time <- fire %>% filter(!is.na(Shift)) %>% filter(!is.na(Dis_dt)) %>%
+                  mutate(Call = mdy_hm(Dis_dt),
                    Weekday = wday(Call, label = TRUE),
-                   Mon = month(Call, label = FALSE),
+                   Mon = month(Call, label = TRUE),
                    Date = date(Call),
                    Hour = hour(Call))
-names(shift_time)
 ggplot(data = shift_time, mapping = aes(x= Mon, fill = Shift))+
-  geom_histogram()
+  geom_bar()
 
 
 ```
@@ -204,4 +216,4 @@ ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
 
 ## Conclusions
 
-"the conclusion"
+According to the data, we found that over the course of 12 months, the calls tend to double in August (When School start) and most calls are EMS calls that tend to last 20 minutes. This is because most interactions with incidents are medical transportation related. The most popular Units called upon are E1 and E3 which our hypothesis is that E1 and E3 are emergency group 1 and emergency group 3 (most likely for medical response). This data set only pertains to the Burlington police department, so in terms of there being bias in our data set it would be more general to Vermont if more fire deperatments data was included.

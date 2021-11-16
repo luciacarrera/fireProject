@@ -256,3 +256,13 @@ ggplot(data = inc_time,
 ## Conclusions
 
 According to the data, we found that over the course of 12 months, the calls tend to double in August (When School start) and most calls are EMS calls that tend to last 20 minutes. This is because most interactions with incidents are medical transportation related. The most popular Units called upon are E1 and E3 which our hypothesis is that E1 and E3 are emergency group 1 and emergency group 3 (most likely for medical response). This data set only pertains to the Burlington police department, so in terms of there being bias in our data set it would be more general to Vermont if more fire deperatments data was included.
+
+### CLAY EXPAND CONCLUSIONS
+
+### Limitations
+
+say like there are thinks we dont know how to do, still getting used to r markdown blah blah blah. also leaflet weird, also lil info on db, sent email to contact person in website never replied.
+
+### Recomendations
+
+

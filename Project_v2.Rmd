@@ -16,11 +16,16 @@ We believe this data could be very interesting to understand for what reasons th
 To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
 
 <br>
+```{r}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
 
 ## Data Setup & Cleaning
+Hidden for now
 
 ```{r setup, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 # Loading of packages we will use for our project
 library(tidyverse)
@@ -32,10 +37,10 @@ library(gridExtra)
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
 
 # Result summaries of our data
-tibble(fire)
+#tibble(fire)
 
 # Visualization of the different variables available in our data set
-names(fire)
+#names(fire)
 
 ## The names of our variables were summarized by r studio leading to names such as "Disp_d....m", to be able to clearly use our data we decided to modify these names for ease of use.
 
@@ -70,7 +75,7 @@ fire <- fire %>% mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%
 
 fire <- fire %>% mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
 
-names(fire)
+#names(fire)
 ```
 
 <br>
@@ -117,11 +122,13 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ### Amount of times a Unit responds to call
 
+This histogram represents the amount of time each unit is called upon to respond to an emergency. (Explain each unit here)
+
+
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
 #
 f2 <- fire %>% group_by(Unit) %>% summarize(count = n()) %>% arrange(desc(count)) %>% select(Unit = Unit, count = count)
 
-f2
 ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
   geom_bar()+ theme(axis.text.x = element_text(hjust=1, angle = 60)) + 
   scale_x_discrete(limits = f2$Unit)
@@ -132,30 +139,34 @@ ggplot(data = fire, mapping = aes(x = Unit, fill = Unit) )+
 
 ### Type of incident description
 
+This plot shows the amount of times a specific incident is responded to by the fire department. Most of their responses involve EMS calls.
+
 ```{r Type of incident description, message=FALSE, warning=FALSE}
-incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% select(Inc_des = Inc_des, count = count) %>% arrange(desc(count)) %>% filter(count > 90)
-incident
+incident <- fire %>% group_by(Inc_des) %>% summarize(count = n()) %>% arrange(desc(count)) %>% filter(count > 90)
+
 ggplot(data = fire, mapping = aes(x = Inc_des, fill = Inc_des))+
-  geom_bar()+#theme(axis.text.x = element_text(hjust=1, angle = 60+  # We have an issue here
-  scale_x_discrete(limits = incident$Inc_des)+guides(fill='none')
+  geom_bar()+theme(axis.text.y = element_text(size = 5))+  # We have an issue here
+  scale_x_discrete(limits = incident$Inc_des)+guides(fill='none') + coord_flip() + xlab("Incident Description")
 
 ```
-
-Around August the calls seem to double in frequency. This could be possible because the UVM student body is back in full swing.
 
 <br>
 
 ### Month by shifts
 
+Shows each month and the amount of responses per month. The color indicates the shift responding. It seems that during August the amount of responses jumps 2x, possibly from the student population returning to the city. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required.
+
+
+
 ```{r Month by shifts, message=FALSE, warning=FALSE}
-shift_time <- fire %>% filter(!is.na(Shift)) %>% mutate(Call = mdy_hm(Dis_dt),
+shift_time <- fire %>% filter(!is.na(Shift)) %>% filter(!is.na(Dis_dt)) %>%
+                  mutate(Call = mdy_hm(Dis_dt),
                    Weekday = wday(Call, label = TRUE),
                    Mon = month(Call, label = TRUE),
                    Date = date(Call),
                    Hour = hour(Call))
-names(shift_time)
 ggplot(data = shift_time, mapping = aes(x= Mon, fill = Shift))+
-  geom_histogram()
+  geom_bar()
 
 
 ```

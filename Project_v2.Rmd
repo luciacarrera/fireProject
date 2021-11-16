@@ -152,21 +152,23 @@ ggplot(data = fire,
 This plot shows the amount of times a specific incident is responded to by the fire department. Most of their responses involve EMS calls.
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
-# 
+# new data frame created to store fire data according to the type of incident,
+# counting number of calls with said incident description, 
+# arranged and listed if count is higher than 90 to reduce noise
 incident <- fire %>%
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
   arrange(desc(count)) %>%
   filter(count > 90)
 
-#
+# bar graph of incident descipition with amount of calls, 
 ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
   geom_bar() + 
   theme(axis.text.y = element_text(size = 5)) +  # We have an issue here
   scale_x_discrete(limits = incident$Inc_des)+guides(fill='none') +
   coord_flip() +
-  xlab("Incident Description")
+  labs(x="Incident Description", y = 'Number of Calls') # title weird so ommited
 
 ```
 
@@ -194,8 +196,9 @@ shift_time <- fire %>%
 
 # bar graph of Month with shift as fill
 ggplot(data = shift_time,
-       mapping = aes(x= Mon, fill = Shift))+
-  geom_bar()
+       mapping = aes(x= Mon, fill = Shift)) +
+  geom_bar() +
+  labs(title = 'Month by Shifts', x = 'Month of the year', y = 'Number of dispatches')
 
 
 ```
@@ -214,14 +217,15 @@ inc_time <- fire %>%
   filter(!is.na(Alm_dt)) %>% 
   filter(!is.na(Inc_des)) %>%
   
-# create new columns to be able to differentiate months, date, hour, minute for arrival call and departure call
+# create new columns to be able to differentiate months, date, hour, minute for arrival calls
   mutate(ACall = mdy_hm(Alm_dt),
          AWeekday = wday(ACall, label = TRUE),
          AMon = month(ACall, label = TRUE),
          ADate = date(ACall),
          AHour = hour(ACall),
          AMin = minute(ACall)) %>%
-  #
+  
+  # same thing for departure calls
   mutate(DCall = mdy_hm(Ins_dt),
          DWeekday = wday(DCall, label = TRUE),
          DMon = month(DCall, label = TRUE),
@@ -229,19 +233,21 @@ inc_time <- fire %>%
          DHour = hour(DCall),
          DMin = minute(DCall))
 
-#
+# Calculations done to properly show amount of time at each incident
 inc_time <- inc_time %>% 
   mutate(time_workd = (DDate - ADate)*24*60,
          time_workh = (DHour - AHour)*60,
          time_workm = DMin - AMin,
          total_m = time_workh + time_workm + time_workd)
 
-#
+# filtering out the NAs from the previous calculations
 inc_time <- inc_time %>% filter(!is.na(inc_time))
 
-#
-ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
-  geom_histogram(binwidth = 4) + labs(title = "Time spent at each incident site (minutes)")
+# histogram to show calculations, with shift as fill
+ggplot(data = inc_time, 
+       mapping = aes(x= total_m, fill = Shift)) +
+  geom_histogram(binwidth = 4) +
+  labs(title = "Time spent at each incident site (minutes)")
 
 ```
 

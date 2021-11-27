@@ -13,19 +13,20 @@ The data set we are analyzing is based on data from the Burlington Fire Departme
 
 We believe this data could be very interesting to understand for the reasons for which the population of Burlington most frequently call the fire department, as well as, the efficiency and speed that this department has. Due to the city having a large population of students, we are also intrigued to see if the large influx of college students during the fall and spring semester affect the data. Another factor we believe could have an effect on our data is the winter season, as the state of Vermont is famous for being its glacial temperatures in the months of december through march. This factor could drastically change the reasons to why the fire department was called.
 
-
 <br>
+
 ```{r}
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+<br>
 
 ## Data Setup & Cleaning
 
-To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
+Apart from the typical data setup, involving the loading of libraries and the csv, we had to do some "cleaning" of the data. This was done to be able to use this data set with greater ease. 
 
-<br>
+The most important part in our "cleaning" process, was to change the names of our variables, as they were very lengthy and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. The reasoning was to be able to use Leaflet to plot coordinates.
 
 ```{r setup, message=FALSE, warning=FALSE}
 # Loading of packages we will use for our project
@@ -46,7 +47,7 @@ names(fire)[6] <- "Dis_dt"             # Dispatch date and time
 names(fire)[7] <- "Not_dt"             # Dispatch Notified Date and Time
 names(fire)[8] <- "Roll_dt"            # Unit responding Date and Time
 names(fire)[9] <- "Arv_dt"             # Arrival Date and Time
-names(fire)[10] <- "Ins_dt"             # In Service Time
+names(fire)[10] <- "Ins_dt"            # In Service Time
 
 # Additional latitude and longitude columns for posterior use
 fire <- fire %>% 

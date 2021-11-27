@@ -62,7 +62,9 @@ fire <- fire %>%
 ### Number of Calls per Hour
 The first graph we wanted to map out is the time of calls to see at what were the most "popular" times to call the fire department. To do so, we plotted the following bar graph. For the graph to be presentable, we did additional data cleaning, here we decided to extract the exact time of calls including the columns with only the date, month, weekday and hour. We also modified the Hour column so it scales from 1 to 24, instead of 0 to 23. This was done because we believe it is more intuitive. 
 
-In our summary statistics we can see the obvious minumum and maximum as well as the mean, median and quartiles. This will help us further understand the behaviour of the graph. According to the which, the most likely times a person calls are between 8am and 5pm. There is a peak between the 11th and 12th hour and a dip between 20 and 5. Because this is 24 hour scale we can say the dip is between 20 and 5.
+In our summary statistics we can see the obvious minumum and maximum as well as the mean, median and quartiles. This will help us further understand the behaviour of the graph. According to the which, the most likely times a person calls are between 8am and 5pm. There is a peak between the 11th and 12th hour and a dip between 8pm and 5pm.
+
+We believe that the reason this graph has a bell shape is because the typical work or school day is between these hours. Meaning more people are awake, active and alert. It is known that the more activity, the more chances of an accident to happen. Also, if for example a cat gets stuck in a tree, there are more chances that someone sees them and calls the fire department, because these hours also coincide with the Sun's schedule.
 
 ```{r Time of Calls, message=FALSE, warning=FALSE}
 #  Further "cleaning" 
@@ -127,7 +129,7 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 <br>
 
-### Amount of times a Unit responds to call
+### Unit Response Count
 
 This histogram represents the amount of time each unit is called upon to respond to an emergency. (Explain each unit here)
 
@@ -156,24 +158,33 @@ ggplot(data = fire,
 
 ### Type of incident description
 
-This plot shows the amount of times a specific incident is responded to by the fire department. Most of their responses involve EMS calls.
+This plot shows the amount of times a specific incident is responded to by the fire department. An overwhelming majority of the incident.
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
+# Amount of calls with the Incident Description being 'EMS call'
+fire %>%
+  group_by(Inc_des) %>%
+  summarize(count = n()) %>%
+  filter(Inc_des == 'EMS call') 
+
 # 
 incident <- fire %>%
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
-  arrange(desc(count)) %>%
-  filter(count > 90)
+  arrange(count) %>%
+  filter(count > 90, Inc_des != 'EMS call') %>% 
+  tail(10)
+
+incident
 
 #
 ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
-  geom_bar() + 
-  theme(axis.text.y = element_text(size = 5)) +  # We have an issue here
-  scale_x_discrete(limits = incident$Inc_des)+guides(fill='none') +
-  coord_flip() +
-  xlab("Incident Description")
+  geom_bar() +  # We have an issue here
+  scale_x_discrete(limits = incident$Inc_des, label=function(x) stringr::str_trunc(x,18)) +
+  xlab("Incident Description") + 
+  guides(fill = 'none') +
+  coord_flip()
 
 ```
 

@@ -30,7 +30,7 @@ The most important part in our "cleaning" process, was to change the names of ou
 
 ```{r setup, message=FALSE, warning=FALSE}
 # Loading of packages we will use for our project
-library(tidyverse)
+library(tidyverse) 
 library(lubridate)
 library(leaflet)
 library(gridExtra)
@@ -38,8 +38,7 @@ library(gridExtra)
 # Loading of the data frame fire to use
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
 
-# The names of our variables were summarized by r studio leading to names such as "Disp_d....m"
-# In order to be able to clearly use the data, we decided to modify them.
+# Modification of variable names
 names(fire)[3] <- "Inc_num"            # Incident number
 names(fire)[4] <- "Inc_des"            # Incident description
 names(fire)[5] <- "Alm_dt"             # Alarm date and time
@@ -49,7 +48,7 @@ names(fire)[8] <- "Roll_dt"            # Unit responding Date and Time
 names(fire)[9] <- "Arv_dt"             # Arrival Date and Time
 names(fire)[10] <- "Ins_dt"            # In Service Time
 
-# Additional latitude and longitude columns for posterior use
+# Additional latitude and longitude columns
 fire <- fire %>% 
   mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%  
   separate(geopoint2, into = c('Lat', 'Long'), sep = ',')%>%
@@ -63,19 +62,19 @@ fire <- fire %>%
 
 The graph below is a histogram to represent what hour of the day most calls come in. According to the graph, the most likely times are between hours 5 and 15 on a 24 hour scale. There is a peak between the 11th and 12th hour and a dip between 20 and 5. Because this is 24 hour scale we can say the dip is between 20 and 5.
 
-
 ```{r Time of Calls, message=FALSE, warning=FALSE}
 # The first graph we wanted to map out is the time of calls to see at what were the most "popular" times to call 
-alarm <- fire %>% mutate(Call = mdy_hm(Alm_dt), 
-                   Weekday = wday(Call, label = TRUE),
-                   Mon = month(Call, label = TRUE),
-                   Date = date(Call),
-                   Hour = hour(Call)+1)
+alarm <- fire %>%
+  mutate(Call = mdy_hm(Alm_dt),
+         Weekday = wday(Call, label = TRUE),
+         Mon = month(Call, label = TRUE),
+         Date = date(Call),
+         Hour = as.ordered(hour(Call)+1)) 
 
 # histogram of number of calls by hour
 ggplot(data = alarm, 
-       mapping = aes(x= Hour)) +
-  geom_histogram(color = 'purple', fill = 'pink', binwidth = 1) +
+       mapping = aes(x= Hour, fill = Hour)) +
+  geom_bar( binwidth = 1, bins = 24) +
   labs(title = "Number of calls at each Hour", y='Number of calls', x='Hour of the day') +
   guides(fill = 'none')
   
@@ -176,7 +175,7 @@ shift_time <- fire %>%
          Year = year(Call)) %>%
   filter(Year != "2018")
 
-shift_time
+#shift_time
 
 # bar graph of Month with shift as fill
 ggplot(data = shift_time,

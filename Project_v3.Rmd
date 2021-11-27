@@ -9,24 +9,25 @@ output: html_document
 
 ## Introduction
 
-The data set we are analyzing today is based on data from the Burlington Fire Department. This data includes info on incident types and response times from Aug 1, 2018, through November 30, 2019. Data was pulled from the fire department RMS database. There is no sample bias as the data is strictly incident responses of the fire department. This data is an observational study to see the time taken from call to response of the fire department and locations of incidents. The only bias that is seen is possibility in rounding times to the nearest minute, but this is understandable and would not affect the results. 
+The data set we are analyzing is based on data from the Burlington Fire Department. This data includes information on incident types and response times from Aug 1, 2018, through November 30, 2019. Data was pulled from the fire department RMS database. There is no sample bias as the data is strictly incident responses of the fire department. This data is an observational study to see the time taken from call to response of the fire department and locations of incidents. The only bias that is seen is possibility in rounding times to the nearest minute, but this is understandable and would not affect the results, as long as one is informed about this occurrence. 
 
-We believe this data could be very interesting to understand for what reasons the population of Burlington most frequently call the fire department, as well as, the efficiency and speed that they have. Because this city has a large population of students we are also intrigued to see if the large influx of college students during the fall and spring semester change the data, for example: the reasons for the calls and the times these emergencies occur. Another factor we believe could strong affect our data would be the winter season, as Vermont is known for being very cold, this could change the reasons to why the fire department was called.
+We believe this data could be very interesting to understand for the reasons for which the population of Burlington most frequently call the fire department, as well as, the efficiency and speed that this department has. Due to the city having a large population of students, we are also intrigued to see if the large influx of college students during the fall and spring semester affect the data. Another factor we believe could have an effect on our data is the winter season, as the state of Vermont is famous for being its glacial temperatures in the months of december through march. This factor could drastically change the reasons to why the fire department was called.
 
-To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
 
 <br>
 ```{r}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
 
 ## Data Setup & Cleaning
-Hidden for now
+
+To be able to use this data set we had to do some cleaning: the most important part was to change the names of our variables due to them being very long and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. This was done to be able to use Leaflet to plot coordinates.
+
+<br>
 
 ```{r setup, message=FALSE, warning=FALSE}
-
 # Loading of packages we will use for our project
 library(tidyverse)
 library(lubridate)
@@ -36,46 +37,23 @@ library(gridExtra)
 # Loading of the data frame fire to use
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
 
-# Result summaries of our data
-#tibble(fire)
+# The names of our variables were summarized by r studio leading to names such as "Disp_d....m"
+# In order to be able to clearly use the data, we decided to modify them.
+names(fire)[3] <- "Inc_num"            # Incident number
+names(fire)[4] <- "Inc_des"            # Incident description
+names(fire)[5] <- "Alm_dt"             # Alarm date and time
+names(fire)[6] <- "Dis_dt"             # Dispatch date and time
+names(fire)[7] <- "Not_dt"             # Dispatch Notified Date and Time
+names(fire)[8] <- "Roll_dt"            # Unit responding Date and Time
+names(fire)[9] <- "Arv_dt"             # Arrival Date and Time
+names(fire)[10] <- "Ins_dt"             # In Service Time
 
-# Visualization of the different variables available in our data set
-#names(fire)
+# Additional latitude and longitude columns for posterior use
+fire <- fire %>% 
+  mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%  
+  separate(geopoint2, into = c('Lat', 'Long'), sep = ',')%>%
+  mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
 
-## The names of our variables were summarized by r studio leading to names such as "Disp_d....m", to be able to clearly use our data we decided to modify these names for ease of use.
-
-# Incident number
-names(fire)[3] <- "Inc_num"
-
-# Incident description
-names(fire)[4] <- "Inc_des"
-
-# Alarm date and time
-names(fire)[5] <- "Alm_dt"
-
-# Dispatch date and time
-names(fire)[6] <- "Dis_dt"
-
-# Dispatch Notified Date and Time
-names(fire)[7] <- "Not_dt"
-
-# Unit responding Date and Time
-names(fire)[8] <- "Roll_dt"
-
-# Arrival Date and Time
-names(fire)[9] <- "Arv_dt"
-
-# In Service Time
-names(fire)[10] <- "Ins_dt"
-
-
-##  We decided to add lattitude and longitude columns  
-fire <- fire %>% mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%  
-  separate(geopoint2, into = c('Lat', 'Long'), sep = ',')
-
-fire <- fire %>% mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
-
-#names(fire)
 ```
 
 <br>

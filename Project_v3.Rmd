@@ -11,7 +11,9 @@ output: html_document
 
 The data set we are analyzing is based on data from the Burlington Fire Department. This data includes information on incident types and response times from Aug 1, 2018, through November 30, 2019. Data was pulled from the fire department RMS database. There is no sample bias as the data is strictly incident responses of the fire department. This data is an observational study to see the time taken from call to response of the fire department and locations of incidents. The only bias that is seen is possibility in rounding times to the nearest minute, but this is understandable and would not affect the results, as long as one is informed about this occurrence. 
 
-We believe this data could be very interesting to understand for the reasons for which the population of Burlington most frequently call the fire department, as well as, the efficiency and speed that this department has. Due to the city having a large population of students, we are also intrigued to see if the large influx of college students during the fall and spring semester affect the data. Another factor we believe could have an effect on our data is the winter season, as the state of Vermont is famous for being its glacial temperatures in the months of december through march. This factor could drastically change the reasons to why the fire department was called.
+We believe this data could be very interesting to understand the reasons for which the population of Burlington most frequently call the fire department, as well as, the efficiency and speed that this department has. Due to the city having a large population of students, we are also intrigued to see if the large influx of college students during the fall and spring semester affect the data. Another factor we believe could have an effect on our data is the winter season, as the state of Vermont is famous for being its glacial temperatures in the months of December through March. This factor could drastically change the reasons to why the fire department was called.
+
+The goal of our project is to provide insight on future resources allocated by the Burlington fire department. 
 
 <br>
 
@@ -62,7 +64,7 @@ fire <- fire %>%
 ### Number of Calls per Hour
 The first graph we wanted to map out is the time of calls to see at what were the most "popular" times to call the fire department. To do so, we plotted the following bar graph. For the graph to be presentable, we did additional data cleaning, here we decided to extract the exact time of calls including the columns with only the date, month, weekday and hour. We also modified the Hour column so it scales from 1 to 24, instead of 0 to 23. This was done because we believe it is more intuitive. 
 
-In our summary statistics we can see the obvious minumum and maximum as well as the mean, median and quartiles. This will help us further understand the behaviour of the graph. According to the which, the most likely times a person calls are between 8am and 5pm. There is a peak between the 11th and 12th hour and a dip between 8pm and 5pm.
+In our summary statistics we can see the obvious minimum and maximum as well as the mean, median and quartiles. This will help us further understand the behavior of the graph. According to the which, the most likely times a person calls are between 8am and 5pm. There is a peak between the 11th and 12th hour and a dip between 8pm and 5pm.
 
 We believe that the reason this graph has a bell shape is because the typical work or school day is between these hours. Meaning more people are awake, active and alert. It is known that the more activity, the more chances of an accident to happen. Also, if for example a cat gets stuck in a tree, there are more chances that someone sees them and calls the fire department, because these hours also coincide with the Sun's schedule.
 
@@ -131,7 +133,7 @@ m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
 
 ### Unit Response Count
 
-This histogram represents the amount of time each unit is called upon to respond to an emergency. (Explain each unit here)
+This histogram represents the amount of time each unit is called upon to respond to an emergency. A "Unit" within the fire department may dedicate to special tasks such as EMS or special rescue. Examples: Fire Engine s.t. E1 = Engine 1 L: Ladder Truck T: Tender C: Car A: Ambulance ERA: Emergency Room Ambulance. The most popular unit called upon was E1, we believe this is because this unit in particular is the "go-to" for most distress calls. Seeing that the most common call is an EMS call, it is safe to assume that e1 is sent to respond to EMS calls. 
 
 
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
@@ -149,7 +151,9 @@ ggplot(data = fire,
   mapping = aes(x = Unit, fill = Unit) ) +
   geom_bar() +
   theme(axis.text.x = element_text(hjust=1, angle = 60)) + 
-  scale_x_discrete(limits = f2$Unit)
+  scale_x_discrete(limits = f2$Unit) + 
+  guides(fill=FALSE) +
+  labs(title = "Unit Response ")
 
 
 ```
@@ -162,12 +166,12 @@ This plot shows the amount of times a specific incident is responded to by the f
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
 # Amount of calls with the Incident Description being 'EMS call'
-fire %>%
+  fire %>%
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
   filter(Inc_des == 'EMS call') 
 
-# 
+#table for incident descriptions 
 incident <- fire %>%
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
@@ -175,9 +179,18 @@ incident <- fire %>%
   filter(count > 90, Inc_des != 'EMS call') %>% 
   tail(10)
 
-incident
+#descending incident table, made to match the graph 
+desc_incident <- fire %>%
+  group_by(Inc_des) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 90, Inc_des != 'EMS call') %>% 
+  tail(10)
 
-#
+#print table 
+desc_incident
+
+#ggplot graph 
 ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
   geom_bar() +  # We have an issue here
@@ -192,9 +205,7 @@ ggplot(data = fire,
 
 ### Month by shifts
 
-Shows each month and the amount of responses per month. The color indicates the shift responding. It seems that during August the amount of responses jumps 2x, possibly from the student population returning to the city. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required.
-
-
+Shows each month and the amount of responses per month. The color indicates the shift responding. A shift is a 24 hour rotation worked by a certain group, so when a section is labeled “A” it means group A was working that shift. Shifts typically go on for 24 hours on, then 48 hours off. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required. For this graph we changed the data we used to be from August of 2018 to August of 2019 instead of November of 2019 to get a better representation of the data. 
 
 ```{r Month by shifts, message=FALSE, warning=FALSE}
 # filter data into new dataframe to remove NAs from Shift and Dispatch (date and time)
@@ -212,8 +223,6 @@ shift_time <- fire %>%
          Hour = hour(Call),
          Year = year(Call)) %>%
   filter(Year != "2018")
-
-#shift_time
 
 # bar graph of Month with shift as fill
 ggplot(data = shift_time,
@@ -247,7 +256,8 @@ inc_time <- fire %>%
          ADate = date(ACall),
          AHour = hour(ACall),
          AMin = minute(ACall)) %>%
-  #
+  
+  # mutate the data to 
   mutate(DCall = mdy_hm(Ins_dt),
          DWeekday = wday(DCall, label = TRUE),
          DMon = month(DCall, label = TRUE),
@@ -269,7 +279,8 @@ inc_time <- inc_time %>% filter(!is.na(inc_time))
 
 #
 ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
-  geom_histogram(binwidth = 2) + labs(title = "Time spent at each incident site (minutes)", x = "Total Time (Minutes)")
+  geom_histogram(binwidth = 2) + labs(title = "Time spent at each incident site (minutes)", x = "Total Time (Minutes)") +
+  scale_x_continuous(breaks = seq(0, 160, by=25))
 
 ```
 
@@ -277,4 +288,13 @@ ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
 
 ## Conclusions
 
-According to the data, we found that over the course of 12 months, the calls tend to double in August (When School start) and most calls are EMS calls that tend to last 20 minutes. This is because most interactions with incidents are medical transportation related. The most popular Units called upon are E1 and E3 which our hypothesis is that E1 and E3 are emergency group 1 and emergency group 3 (most likely for medical response). This data set only pertains to the Burlington police department, so in terms of there being bias in our data set it would be more general to Vermont if more fire departments data was included.
+The graphs we created represented the following: Number of calls at each hour, Location of Calls, Amount of times a Unit responds, Type of incident description to call, Month by shifts, and Amount of time at each incident. According to the data, we found that over the course of 14 months, with the number of calls at each hour the data shows that the most calls are between hours 8am and 5pm. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
+
+
+the most popular Units called upon are E1 and E3 which stands for engine1 and engine3, meaning that these two trucks are the most used vehicles at the Burlington Fire Department.
+## Limitations/recommendations 
+
+When it comes to the graphs we made and limitations, there is still a lot we could learn and improve using more efficient methods using r markdown.This would allow us to represent the graphs in more meaningful ways. We used leaflet for the first time for this project, and it felt like there are better ways to plot the data points.
+
+A limitation in terms of the data set we were given was how the data was not descriptive with their labels, and we ran into issues where we were confused about what certain labels mean, and how to interpret the data. The information seemed to be specific to the Burlington Fire Department and was not available online. We tried to send an email to contact the makers of the data set, but never got a response. The Burlington Fire Department website was not very informative of information either.
+

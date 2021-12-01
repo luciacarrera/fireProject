@@ -195,6 +195,7 @@ ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
   geom_bar() +  # We have an issue here
   scale_x_discrete(limits = incident$Inc_des, label=function(x) stringr::str_trunc(x,18)) +
+  labs(title = "Incident Descprition Count") +
   xlab("Incident Description") + 
   guides(fill = 'none') +
   coord_flip()
@@ -288,10 +289,13 @@ ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
 
 ## Conclusions
 
-The graphs we created represented the following: Number of calls at each hour, Location of Calls, Amount of times a Unit responds, Type of incident description to call, Month by shifts, and Amount of time at each incident. According to the data, we found that over the course of 14 months, with the number of calls at each hour the data shows that the most calls are between hours 8am and 5pm. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
+The graphs we created represented the following: Number of calls at each hour, Location of Calls, Amount of times a Unit responds, Type of incident description to call, Month by shifts, and Amount of time at each incident. According to the data, we found that over the course of 14 months, the number of calls for each hour peaks between hours 8am and 5pm. This is when people are active during the day and traveling to and from work. Our data shows the location of calls majority is within central Burlington, but there are also calls located outside of Burlington. By viewing the graph, the Burlington Fire Department can make assumptions about the location of common frequency calls. As the data shows for the amount of times a unit responds, E1 and E3 are the most common vehicles in use. Whenever the fire department responses to a situation one of these engines is required to leave at the same time. 
+
+The most common incident description was "EMS call" (Emergency Medical Situation), but the second most frequent one was "EMS call where injured party has been transported by a non-fire service agency or left the scene prior to arrival". The first description is used 11 times more than the second, leading us to believe that a lot of situation are grouped under this particular term. To be able to clearly see the frequency of the rest of the situations for which the fire department was called, we removed "EMS call" so that it would not overshadow. 
+
+For Months by Shift, there was slight increase in calls between July and October. For amount of time spent at each incident, most incidents take under 25 minutes. This is most likely because many of the responses are for medical emergencies. Once an ambulence arrives on the scene and the patient is taken away, the fire department is no longer needed. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
 
 
-the most popular Units called upon are E1 and E3 which stands for engine1 and engine3, meaning that these two trucks are the most used vehicles at the Burlington Fire Department.
 ## Limitations/recommendations 
 
 When it comes to the graphs we made and limitations, there is still a lot we could learn and improve using more efficient methods using r markdown.This would allow us to represent the graphs in more meaningful ways. We used leaflet for the first time for this project, and it felt like there are better ways to plot the data points.

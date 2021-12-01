@@ -19,7 +19,6 @@ The goal of our project is to provide insight on future resources allocated by t
 
 ```{r}
 knitr::opts_chunk$set(echo = TRUE)
-
 ```
 
 <br>
@@ -36,10 +35,8 @@ library(tidyverse)
 library(lubridate)
 library(leaflet)
 library(gridExtra)
-
 # Loading of the data frame fire to use
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
-
 # Modification of variable names
 names(fire)[3] <- "Inc_num"            # Incident number
 names(fire)[4] <- "Inc_des"            # Incident description
@@ -49,13 +46,11 @@ names(fire)[7] <- "Not_dt"             # Dispatch Notified Date and Time
 names(fire)[8] <- "Roll_dt"            # Unit responding Date and Time
 names(fire)[9] <- "Arv_dt"             # Arrival Date and Time
 names(fire)[10] <- "Ins_dt"            # In Service Time
-
 # Additional latitude and longitude columns
 fire <- fire %>% 
   mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%  
   separate(geopoint2, into = c('Lat', 'Long'), sep = ',')%>%
   mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
-
 ```
 
 <br>
@@ -81,27 +76,21 @@ alarm <- fire %>%
   # modification of variables for the summary statistics
   mutate(MonNum = month(Call, label = FALSE),
          WeekdayNum = wday(Call, label = FALSE))
-
-
 #* alarm  %>%
 #  summarise(meanCall = mean(Call),
 #           meanDate = mean(Date),
 #            meanMon = month(round(mean(MonNum)), label = TRUE), 
  #           meanWeekDay = wday(round(mean(WeekdayNum)), label = TRUE)) 
-
 # summary statistics
 summary(alarm$HourNum)
 perHour <- alarm %>%
   group_by(Hour) %>%
   summarise(count = n())
-
 stats <- perHour %>% 
   summarise(maxCalls = max(count),
             minCalls = min(count))
-
 left_join(stats, perHour, by = c( 'maxCalls' = 'count')) %>% select(Hour, maxCalls)
 left_join(stats, perHour, by = c('minCalls' = 'count')) %>% select(Hour, minCalls)
-
 # histogram of number of calls by hour
 ggplot(data = alarm, 
        mapping = aes(x= Hour, fill = Hour)) +
@@ -109,7 +98,6 @@ ggplot(data = alarm,
   labs(title = "Number of calls per Hour", y='Number of calls', x='Hour of the day') +
   guides(fill = 'none')
   
-
 ```
 
 <br>
@@ -123,10 +111,8 @@ The graph below is a leaflet/GeoPoint graph used to represent where the calls ar
 m <- leaflet() %>%
   addTiles() %>%
   setView(lat = 44.475, lng = -73.212, zoom = 12)
-
 # Using leaflet, we made a map showing circles on the location of each incident.
 m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
-
 ```
 
 <br>
@@ -145,7 +131,6 @@ f2 <- fire %>%
   arrange(desc(count)) %>%
   select(Unit = Unit, count = count) %>%
   filter(count > 90)
-
 # bar graph of number of calls each unit responded to
 ggplot(data = fire,
   mapping = aes(x = Unit, fill = Unit) ) +
@@ -154,8 +139,6 @@ ggplot(data = fire,
   scale_x_discrete(limits = f2$Unit) + 
   guides(fill=FALSE) +
   labs(title = "Unit Response ")
-
-
 ```
 
 <br>
@@ -163,6 +146,7 @@ ggplot(data = fire,
 ### Type of incident description
 
 This plot shows the amount of times a specific incident is responded to by the fire department. An overwhelming majority of the incident.
+This plot shows the frequency of specific incidents recorded. Overall, most of the calls are of EMS calls. Over 6000 of the calls involve EMS was the unit responding to the injured still on scene. The second most common call is when the citizens involved in the incident have already been transported off site. These types of calls are most common because every time the police are called of an injury, the fire department sends an engineer to the scene as well in case of fire, obstetrical, or other labor required.
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
 # Amount of calls with the Incident Description being 'EMS call'
@@ -170,7 +154,6 @@ This plot shows the amount of times a specific incident is responded to by the f
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
   filter(Inc_des == 'EMS call') 
-
 #table for incident descriptions 
 incident <- fire %>%
   group_by(Inc_des) %>%
@@ -178,7 +161,6 @@ incident <- fire %>%
   arrange(count) %>%
   filter(count > 90, Inc_des != 'EMS call') %>% 
   tail(10)
-
 #descending incident table, made to match the graph 
 desc_incident <- fire %>%
   group_by(Inc_des) %>%
@@ -186,19 +168,17 @@ desc_incident <- fire %>%
   arrange(desc(count)) %>%
   filter(count > 90, Inc_des != 'EMS call') %>% 
   tail(10)
-
 #print table 
 desc_incident
-
 #ggplot graph 
 ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
   geom_bar() +  # We have an issue here
   scale_x_discrete(limits = incident$Inc_des, label=function(x) stringr::str_trunc(x,18)) +
+  labs(title = "Incident Descprition Count") +
   xlab("Incident Description") + 
   guides(fill = 'none') +
   coord_flip()
-
 ```
 
 <br>
@@ -223,24 +203,20 @@ shift_time <- fire %>%
          Hour = hour(Call),
          Year = year(Call)) %>%
   filter(Year != "2018")
-
 # bar graph of Month with shift as fill
 ggplot(data = shift_time,
        mapping = aes(x= Mon, fill = Shift))+
   geom_bar() +
   labs(title = "2019 - Number of calls & shift responding", y='Number of calls', x='Month')
-
-
 ```
 
 <br>
 
 ### Amount of time at each incident
 
-This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulence to deliver the patient to a medical facility.
+This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulance to deliver the patient to a medical facility.
 
 ```{r Amount of time at each incident, message=FALSE, warning=FALSE}
-
 # Time spent at each site, A_ being the arrival time, and D_ being the departure time
 # new data frame inc_time with the na's filtered out
 inc_time <- fire %>%
@@ -264,7 +240,6 @@ inc_time <- fire %>%
          DDate = date(DCall),
          DHour = hour(DCall),
          DMin = minute(DCall))
-
 #
 inc_time <- inc_time %>% 
   mutate(time_workd = (DDate - ADate)*24*60,
@@ -272,26 +247,25 @@ inc_time <- inc_time %>%
          time_workm = DMin - AMin,
          total_m = time_workh + time_workm + time_workd) %>%
   filter(total_m < 160)
-
-
 #
 inc_time <- inc_time %>% filter(!is.na(inc_time))
-
 #
 ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
   geom_histogram(binwidth = 2) + labs(title = "Time spent at each incident site (minutes)", x = "Total Time (Minutes)") +
   scale_x_continuous(breaks = seq(0, 160, by=25))
-
 ```
 
 <br>
 
 ## Conclusions
 
-The graphs we created represented the following: Number of calls at each hour, Location of Calls, Amount of times a Unit responds, Type of incident description to call, Month by shifts, and Amount of time at each incident. According to the data, we found that over the course of 14 months, with the number of calls at each hour the data shows that the most calls are between hours 8am and 5pm. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
+The graphs we created represented the following: Number of calls at each hour, Location of Calls, Amount of times a Unit responds, Type of incident description to call, Month by shifts, and Amount of time at each incident. According to the data, we found that over the course of 14 months, the number of calls for each hour peaks between hours 8am and 5pm. This is when people are active during the day and traveling to and from work. Our data shows the location of calls majority is within central Burlington, but there are also calls located outside of Burlington. By viewing the graph, the Burlington Fire Department can make assumptions about the location of common frequency calls. As the data shows for the amount of times a unit responds, E1 and E3 are the most common vehicles in use. Whenever the fire department responses to a situation one of these engines is required to leave at the same time. 
+
+The most common incident description was "EMS call" (Emergency Medical Situation), but the second most frequent one was "EMS call where injured party has been transported by a non-fire service agency or left the scene prior to arrival". The first description is used 11 times more than the second, leading us to believe that a lot of situation are grouped under this particular term. To be able to clearly see the frequency of the rest of the situations for which the fire department was called, we removed "EMS call" so that it would not overshadow. 
+
+For Months by Shift, there was slight increase in calls between July and October. For amount of time spent at each incident, most incidents take under 25 minutes. This is most likely because many of the responses are for medical emergencies. Once an ambulence arrives on the scene and the patient is taken away, the fire department is no longer needed. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
 
 
-the most popular Units called upon are E1 and E3 which stands for engine1 and engine3, meaning that these two trucks are the most used vehicles at the Burlington Fire Department.
 ## Limitations/recommendations 
 
 When it comes to the graphs we made and limitations, there is still a lot we could learn and improve using more efficient methods using r markdown.This would allow us to represent the graphs in more meaningful ways. We used leaflet for the first time for this project, and it felt like there are better ways to plot the data points.

@@ -30,13 +30,16 @@ Apart from the typical data setup, involving the loading of libraries and the cs
 The most important part in our "cleaning" process, was to change the names of our variables, as they were very lengthy and incomprehensible. We also modified the geopoint column by separating and creating two new variables, Longitude and Latitude. The reasoning was to be able to use Leaflet to plot coordinates.
 
 ```{r setup, message=FALSE, warning=FALSE}
+
 # Loading of packages we will use for our project
 library(tidyverse) 
 library(lubridate)
 library(leaflet)
 library(gridExtra)
+
 # Loading of the data frame fire to use
 fire <- read.csv("O_fire_new.csv", na.strings = '', stringsAsFactors = TRUE)
+
 # Modification of variable names
 names(fire)[3] <- "Inc_num"            # Incident number
 names(fire)[4] <- "Inc_des"            # Incident description
@@ -46,11 +49,13 @@ names(fire)[7] <- "Not_dt"             # Dispatch Notified Date and Time
 names(fire)[8] <- "Roll_dt"            # Unit responding Date and Time
 names(fire)[9] <- "Arv_dt"             # Arrival Date and Time
 names(fire)[10] <- "Ins_dt"            # In Service Time
+
 # Additional latitude and longitude columns
 fire <- fire %>% 
   mutate(geopoint2 = str_sub(geopoint, 1,-1)) %>%  
   separate(geopoint2, into = c('Lat', 'Long'), sep = ',')%>%
   mutate(Long = as.numeric(Long), Lat =as.numeric(Lat))
+
 ```
 
 <br>
@@ -64,6 +69,7 @@ In our summary statistics we can see the obvious minimum and maximum as well as 
 We believe that the reason this graph has a bell shape is because the typical work or school day is between these hours. Meaning more people are awake, active and alert. It is known that the more activity, the more chances of an accident to happen. Also, if for example a cat gets stuck in a tree, there are more chances that someone sees them and calls the fire department, because these hours also coincide with the Sun's schedule.
 
 ```{r Time of Calls, message=FALSE, warning=FALSE}
+
 #  Further "cleaning" 
 alarm <- fire %>%
   # modification of variables for the graphs
@@ -76,11 +82,7 @@ alarm <- fire %>%
   # modification of variables for the summary statistics
   mutate(MonNum = month(Call, label = FALSE),
          WeekdayNum = wday(Call, label = FALSE))
-#* alarm  %>%
-#  summarise(meanCall = mean(Call),
-#           meanDate = mean(Date),
-#            meanMon = month(round(mean(MonNum)), label = TRUE), 
- #           meanWeekDay = wday(round(mean(WeekdayNum)), label = TRUE)) 
+
 # summary statistics
 summary(alarm$HourNum)
 perHour <- alarm %>%
@@ -107,12 +109,14 @@ ggplot(data = alarm,
 The graph below is a leaflet/GeoPoint graph used to represent where the calls are located in Burlington. The calls are located in Burlington, but there are some calls located on the edge of Colchester and South Burlington. There is also an outlier, located all the way out near Montpelier. There is a very small amount of outliers (>.1%) which could be from technical error from the department.
 
 ```{r Location of Calls, message=FALSE, warning=FALSE}
+
 #  using dplyr and leaflet we filtered how much zoom and what part of the world the map would show
 m <- leaflet() %>%
   addTiles() %>%
   setView(lat = 44.475, lng = -73.212, zoom = 12)
 # Using leaflet, we made a map showing circles on the location of each incident.
 m  %>% addCircles(lng = fire$Long, lat = fire$Lat)
+
 ```
 
 <br>
@@ -123,6 +127,7 @@ This histogram represents the amount of time each unit is called upon to respond
 
 
 ```{r Amount of times a Unit responds to call, message=FALSE, warning=FALSE}
+
 #  new data frame to group data by unit, get the how many calls they responded to,
 # arranged in descending according to count and only show unit and count
 f2 <- fire %>%
@@ -131,6 +136,7 @@ f2 <- fire %>%
   arrange(desc(count)) %>%
   select(Unit = Unit, count = count) %>%
   filter(count > 90)
+
 # bar graph of number of calls each unit responded to
 ggplot(data = fire,
   mapping = aes(x = Unit, fill = Unit) ) +
@@ -139,6 +145,7 @@ ggplot(data = fire,
   scale_x_discrete(limits = f2$Unit) + 
   guides(fill=FALSE) +
   labs(title = "Unit Response ")
+
 ```
 
 <br>
@@ -149,11 +156,13 @@ This plot shows the amount of times a specific incident is responded to by the f
 This plot shows the frequency of specific incidents recorded. Overall, most of the calls are of EMS calls. Over 6000 of the calls involve EMS was the unit responding to the injured still on scene. The second most common call is when the citizens involved in the incident have already been transported off site. These types of calls are most common because every time the police are called of an injury, the fire department sends an engineer to the scene as well in case of fire, obstetrical, or other labor required.
 
 ```{r Type of incident description, message=FALSE, warning=FALSE}
+
 # Amount of calls with the Incident Description being 'EMS call'
   fire %>%
   group_by(Inc_des) %>%
   summarize(count = n()) %>%
   filter(Inc_des == 'EMS call') 
+
 #table for incident descriptions 
 incident <- fire %>%
   group_by(Inc_des) %>%
@@ -161,6 +170,7 @@ incident <- fire %>%
   arrange(count) %>%
   filter(count > 90, Inc_des != 'EMS call') %>% 
   tail(10)
+
 #descending incident table, made to match the graph 
 desc_incident <- fire %>%
   group_by(Inc_des) %>%
@@ -168,8 +178,10 @@ desc_incident <- fire %>%
   arrange(desc(count)) %>%
   filter(count > 90, Inc_des != 'EMS call') %>% 
   tail(10)
+
 #print table 
 desc_incident
+
 #ggplot graph 
 ggplot(data = fire,
        mapping = aes(x = Inc_des, fill = Inc_des)) +
@@ -179,6 +191,7 @@ ggplot(data = fire,
   xlab("Incident Description") + 
   guides(fill = 'none') +
   coord_flip()
+
 ```
 
 <br>
@@ -188,6 +201,7 @@ ggplot(data = fire,
 Shows each month and the amount of responses per month. The color indicates the shift responding. A shift is a 24 hour rotation worked by a certain group, so when a section is labeled “A” it means group A was working that shift. Shifts typically go on for 24 hours on, then 48 hours off. The shifts A,B,C seem to be the constant shifts overall, and the other shifts seem to be for if there is an influx of calls and another shift is required. For this graph we changed the data we used to be from August of 2018 to August of 2019 instead of November of 2019 to get a better representation of the data. 
 
 ```{r Month by shifts, message=FALSE, warning=FALSE}
+
 # filter data into new dataframe to remove NAs from Shift and Dispatch (date and time)
 shift_time <- fire %>%
   filter(!is.na(Shift)) %>%
@@ -203,20 +217,23 @@ shift_time <- fire %>%
          Hour = hour(Call),
          Year = year(Call)) %>%
   filter(Year != "2018")
+
 # bar graph of Month with shift as fill
 ggplot(data = shift_time,
        mapping = aes(x= Mon, fill = Shift))+
   geom_bar() +
-  labs(title = "2019 - Number of calls & shift responding", y='Number of calls', x='Month')
+  labs(title = "Number of calls & shift responding (2019)", y='Number of calls', x='Month')
+
 ```
 
 <br>
 
 ### Amount of time at each incident
 
-This plot shows the time spent at each incident in minutes. Most incidents only take about 20 minutes at the site. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulance to deliver the patient to a medical facility.
+This plot shows the time spent at each incident in minutes. Most incidents only take about 25 minutes at the site, as can be seen per the mean. There is some cases where the shift is needed at a site for a long time. Most incidents are EMS calls, thus this makes sense as they most likely arrive at the scene and call for an ambulance to deliver the patient to a medical facility.
 
 ```{r Amount of time at each incident, message=FALSE, warning=FALSE}
+
 # Time spent at each site, A_ being the arrival time, and D_ being the departure time
 # new data frame inc_time with the na's filtered out
 inc_time <- fire %>%
@@ -240,19 +257,27 @@ inc_time <- fire %>%
          DDate = date(DCall),
          DHour = hour(DCall),
          DMin = minute(DCall))
-#
+
+# Creation of new data frame with calculations (measurements in minutes)
 inc_time <- inc_time %>% 
-  mutate(time_workd = (DDate - ADate)*24*60,
-         time_workh = (DHour - AHour)*60,
-         time_workm = DMin - AMin,
-         total_m = time_workh + time_workm + time_workd) %>%
+  mutate(time_workm = DMin - AMin,
+         time_workh = (DHour - AHour) * 60,
+         time_workd = as.integer(DDate - ADate) * 24 * 60,
+         total_m = time_workm + time_workh + time_workd) %>%
   filter(total_m < 160)
-#
+
+# removal of missing data in incident time
 inc_time <- inc_time %>% filter(!is.na(inc_time))
-#
-ggplot(data = inc_time, mapping = aes(x= total_m, fill = Shift))+
-  geom_histogram(binwidth = 2) + labs(title = "Time spent at each incident site (minutes)", x = "Total Time (Minutes)") +
+
+inc_time %>% summarize(meanTotal = mean(total_m))
+
+# creation of histogram
+ggplot(data = inc_time,
+       mapping = aes( x= total_m, fill = Shift)) +
+  geom_histogram(binwidth = 2) +
+  labs(title = "Time spent at each incident site (minutes)", x = "Total Time (Minutes)") +
   scale_x_continuous(breaks = seq(0, 160, by=25))
+
 ```
 
 <br>
@@ -265,6 +290,7 @@ The most common incident description was "EMS call" (Emergency Medical Situation
 
 For Months by Shift, there was slight increase in calls between July and October. For amount of time spent at each incident, most incidents take under 25 minutes. This is most likely because many of the responses are for medical emergencies. Once an ambulence arrives on the scene and the patient is taken away, the fire department is no longer needed. In terms of bias with our data set, this data set only pertains to the Burlington fire department, so our data set it would be more general to Vermont if other Vermont fire departments data were included.
 
+<br>
 
 ## Limitations/recommendations 
 
@@ -272,3 +298,5 @@ When it comes to the graphs we made and limitations, there is still a lot we cou
 
 A limitation in terms of the data set we were given was how the data was not descriptive with their labels, and we ran into issues where we were confused about what certain labels mean, and how to interpret the data. The information seemed to be specific to the Burlington Fire Department and was not available online. We tried to send an email to contact the makers of the data set, but never got a response. The Burlington Fire Department website was not very informative of information either.
 
+<br>
+<br>
